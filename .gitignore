@@ -1,0 +1,12 @@
+# Compiled Java class files
+*.class
+
+# Build output folders
+bin/
+target/
+
+# IDE/editor workspace noise
+.vscode/
+
+# Logs
+*.log
