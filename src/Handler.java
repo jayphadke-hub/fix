@@ -18,6 +18,7 @@ public class Handler extends Thread {
         this.inbound = inbound;
         this.outbound = outbound;
         this.store = new LinkedHashMap<>();
+        this.lastSent = LocalDateTime.now();
     }
 
     private void send(FixMessage m)
@@ -30,6 +31,7 @@ public class Handler extends Thread {
             }
             lastSent=LocalDateTime.now();
             outbound.put(m);
+            System.out.println("added to outbound "+m.toString());
         } catch (Exception e) {
             System.out.println("ERROR WHILE ADDING MSG TO OUTBOUND Q");
         }
@@ -64,6 +66,7 @@ public class Handler extends Thread {
                 }
                 FixMessage msg=(FixMessage)inbound.poll(10,TimeUnit.SECONDS);
                 if (msg==null) continue;
+                System.out.println("Process handling "+msg.toString());
                 int seq=msg.getInt(34);
                 if(seq<expected && !"Y".equals(msg.getField(43))) throw new Exception("FATAL ERROR: RECD SEQ NO < EXPECTED");
                 else if(seq>expected)
@@ -112,6 +115,7 @@ public class Handler extends Thread {
                 expected++;
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
