@@ -14,7 +14,7 @@ public class Acceptor extends Thread {
             System.out.println("Listening on port " + port);
             socket = serverSocket.accept();
             System.out.println("Connected to: "+socket.getInetAddress());
-            FixSession session = new FixSession(socket);
+            FixSession session = new FixSession(socket, SessionRole.ACCEPTOR);
         }catch (Exception e) {
             e.printStackTrace();
             System.out.println("ERROR :" + e.getMessage());

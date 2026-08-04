@@ -12,13 +12,15 @@ public class Handler extends Thread {
     private int expected=1;
     private int outgoing=1;
     private LocalDateTime lastSent;
-    
-    Handler(FixMessageQueue inbound, FixMessageQueue outbound)
+    SessionRole role;
+    SessionState state=SessionState.NEW;
+    Handler(FixMessageQueue inbound, FixMessageQueue outbound, SessionRole role)
     {
         this.inbound = inbound;
         this.outbound = outbound;
         this.store = new LinkedHashMap<>();
         this.lastSent = LocalDateTime.now();
+        this.role = role;
     }
 
     private void send(FixMessage m)
@@ -56,6 +58,14 @@ public class Handler extends Thread {
     @Override
     public void run(){
         try {
+            if(role==SessionRole.INITIATOR && SessionState.NEW==state)
+            {
+                FixMessage logon = getMessage("A");
+                logon.setField(98,"0");
+                logon.setField(108,"30");
+                send(logon);
+                state=SessionState.LOGON_SENT;
+            }
             while (true) {
                 LocalDateTime now=LocalDateTime.now();
                 Duration d=Duration.between(lastSent, now);
@@ -78,10 +88,22 @@ public class Handler extends Thread {
                 }
                 if(msg.getField(35).equals("A"))
                 {
-                    FixMessage logon = getMessage("A"); 
-                    logon.setField(98,"0");
-                    logon.setField(108,"30");
-                    send(logon);
+                    if(role==SessionRole.ACCEPTOR && state==SessionState.NEW)
+                    {
+                        FixMessage logon = getMessage("A");
+                        logon.setField(98,"0");
+                        logon.setField(108,"30");
+                        send(logon);
+                    }
+                    else if(role==SessionRole.INITIATOR && state==SessionState.LOGON_SENT)
+                    {
+                        state=SessionState.CONNECTED;
+                        System.out.println("LOGON SUCCESSFUL");
+                    }
+                    else
+                    {
+                        System.out.println("ERROR:LOGON RECEIVED WHILE ALREADY CONNECTED");
+                    }
                 }
                 else if(msg.getField(35).equals("1"))
                 {

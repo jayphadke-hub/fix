@@ -6,11 +6,15 @@ public class FixSession {
     private Socket socket;
     private FixMessageQueue inbound, outbound;
     private Handler handler;
-    public FixSession(Socket socket) {
+    private SessionRole role;
+    //private SessionState state;
+    public FixSession(Socket socket,SessionRole role) {
+        this.role=role;
+        //this.state=SessionState.NEW;
         this.socket = socket;
         inbound = new FixMessageQueue();
         outbound = new FixMessageQueue();
-        this.handler = new Handler(inbound, outbound);
+        this.handler = new Handler(inbound, outbound, role);
         handler.start();
         Thread sThread=new Thread(this::sendLoop,"SendThread");
         sThread.start();

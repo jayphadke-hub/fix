@@ -22,12 +22,7 @@ public class Client extends Thread{
 public void run() {
     try{
         Socket socket=new Socket("127.0.0.1",9274);
-        FixMessage m=getMessage("A");
-        String msg=m.encode();
-        byte[] b=msg.getBytes();
-        OutputStream os=socket.getOutputStream();
-        os.write(b);
-        os.flush();
+        FixSession session=new FixSession(socket,SessionRole.INITIATOR);
     }catch(Exception e)
     {
         e.printStackTrace();
